@@ -4,10 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Miha Erzen</title>
-
-  <style>
-    button { cursor: pointer }
-  </style>
 </head>
 <body>
 <section>
@@ -21,9 +17,6 @@
     <li>100% W3C valid</li>
   </ul>
   <p>This is the result!</p>
-
-  <p>For some reason you found this amusing?</p>
-  <button type="button" id="buyMeACoffeeButton">Contribute 1&euro; to my &#x2615; intake <small>(with crypto)</small></button>
 </section>
 
 <section>
@@ -33,27 +26,5 @@
     <li>Github: <a href="https://github.com/mihaerzen">mihaerzen</a></li>
   </ul>
 </section>
-
-<script>
-  /**
-   * Created by Sven on 11-12-2017.
-   */
-  var e=document.createElement("iframe");function checkout(t,i){new BroadcastChannel("checkout_response");if(void 0!==t.token){setAttributes(e,{src:"https://getmunt.com/checkout/"+t.token,onload:"this.width=window.innerWidth;",style:"z-index: 2147483647;    display: block;    border: 0px none transparent;    overflow-x: hidden;    overflow-y: hidden;    visibility: visible;    margin: 0px;    padding: 0px;    position: fixed;    left: 0px;    top: 0px;    height: 100%;"});var n=window.addEventListener?"addEventListener":"attachEvent";(0,window[n])("attachEvent"===n?"onmessage":"message",function(e){if(console.log(e),"https://getmunt.com"===e.origin){var t=e.data;console.log(t),t.error?i(e={error:!0,message:"An error occurred, please try again"}):(e={error:!1,id:t.id},i(e),closeIFrame())}else e={error:!0,message:"Invalid origin "+e.origin},i(e)},!1)}else i({error:!0,message:"missing payment_id"})}function closeIFrame(){setAttributes(e,{src:"https://getmunt.com/checkout/",onload:"this.width=window.innerWidth;",style:"z-index: 2147483647;    display: block;    border: 0px none transparent;    overflow-x: hidden;    overflow-y: hidden;    visibility: hidden;    margin: 0px;    padding: 0px;    position: fixed;    left: 0px;    top: 0px;    width: 100%;    height: 100%;"}),document.body.appendChild(e)}function setAttributes(e,t){for(var i in t)e.setAttribute(i,t[i])}setAttributes(e,{id:"MuntIFrame",allowfullscreen:"",onload:"this.width=window.innerWidth;",src:"https://getmunt.com/checkout",style:"z-index: 2147483647;    display: block;    border: 0px none transparent;    overflow-x: hidden;    overflow-y: hidden;    visibility: hidden;    margin: 0px;    padding: 0px;    position: fixed;    left: 0px;    top: 0px;    height: 100%;"}),window.onload=function(){document.body.appendChild(e)};
-</script>
-<script>
-  var MUNT_TOKEN = 'FlFiSFTWrqFRG1VglHxX';
-
-  document.getElementById('buyMeACoffeeButton').addEventListener('click', function (e) {
-    checkout({
-      token: MUNT_TOKEN
-    }, function (response) {
-      if (!response.error) {
-        alert('Succeeded! Payment id: ' + response.id);
-      } else {
-        alert('Error!');
-      }
-    });
-  });
-</script>
 </body>
 </html>
