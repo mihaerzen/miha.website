@@ -208,9 +208,9 @@ async function startTheGame() {
     }
 
     async start() {
-      const emoji = '🦟';
+      const emoji = '💩';
       await logIt(`%cQuest #1: The hidden ${emoji}`, subTitleCss, 2000);
-      await logIt('%cFind the hidden mosquito on the page and click it.', normalText, 1000);
+      await logIt('%cFind the hidden p00p on the page and click it.', normalText, 1000);
 
       const padding = 200;
       const windowWidth = window.innerWidth - padding;
@@ -267,7 +267,7 @@ async function startTheGame() {
 
   const theHiddenButtonQuest = new TheHiddenButtonQuest();
   await theHiddenButtonQuest.start();
-  await logIt('%cWow, good job finding the 🦟!', congratsCss, 400); // 400 is the animation time
+  await logIt('%cWow, good job finding the 💩!', congratsCss, 400); // 400 is the animation time
   await logIt('%c🎉', makeCssString([['font-size', '5em']]));
   await theHiddenButtonQuest.printSummary();
   theHiddenButtonQuest.terminate();
