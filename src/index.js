@@ -1,12 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import 'devtools-detect';
 
-const userAgent = ((navigator && navigator.userAgent) || '').toLowerCase();
-function isFirefox() {
-  const match = userAgent.match(/(?:firefox|fxios)\/(\d+)/);
-  return match !== null && match[1];
-}
-
 async function startTheGame() {
   const [
     { default: uuid },
@@ -105,7 +99,7 @@ async function startTheGame() {
     ['font-weight', '500'],
   ]);
   const normalText = makeCssString([
-    ['color', isFirefox() ? 'white' : 'black'],
+    ['color', 'black'],
     ['font-size', '1.6em'],
     ['font-weight', '300'],
   ]);
@@ -213,7 +207,11 @@ async function startTheGame() {
       ];
     }
 
-    start() {
+    async start() {
+      const emoji = '🦟';
+      await logIt(`%cQuest #1: The hidden ${emoji}`, subTitleCss, 2000);
+      await logIt('%cFind the hidden mosquito on the page and click it.', normalText, 1000);
+
       const padding = 200;
       const windowWidth = window.innerWidth - padding;
       const windowHeight = window.innerHeight - padding;
@@ -229,7 +227,7 @@ async function startTheGame() {
         ['left', `${left}px`],
         ['top', `${top}px`],
       ]);
-      this.button.textContent = '🔘';
+      this.button.textContent = emoji;
 
       const questPromise = new Promise((resolve) => {
         this.onButtonClicked = async () => {
@@ -267,12 +265,9 @@ async function startTheGame() {
   await logIt('%cYou want to play a game? 🧩', normalText, 1000);
   await logIt("%cI'll take that as a yes... Remember, don't close the console!\n\n", normalText, 2000);
 
-  await logIt('%cQuest #1: The hidden 🔘', subTitleCss, 2000);
-  await logIt('%cFind the hidden button on the page and click it.', normalText, 1000);
-
   const theHiddenButtonQuest = new TheHiddenButtonQuest();
   await theHiddenButtonQuest.start();
-  await logIt('%cWow, good job finding the button!', congratsCss, 400); // 400 is the animation time
+  await logIt('%cWow, good job finding the 🦟!', congratsCss, 400); // 400 is the animation time
   await logIt('%c🎉', makeCssString([['font-size', '5em']]));
   await theHiddenButtonQuest.printSummary();
   theHiddenButtonQuest.terminate();

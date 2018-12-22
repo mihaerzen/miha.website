@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --https --disableHostCheck",
+    "prebuild": "rm -rf dist",
     "build": "webpack --env=production",
     "predeploy": "npm run build",
     "deploy": "awsudo -u miha serverless deploy",
