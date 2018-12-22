@@ -1,9 +1,34 @@
 /* eslint-disable class-methods-use-this */
 import 'devtools-detect';
-import { DateTime } from 'luxon';
 
-(function (window, document) {
-  const { console } = window;
+async function startTheGame() {
+  const [
+    { default: uuid },
+    { DateTime },
+    { default: gql },
+    { default: AWSAppSyncClient },
+    { default: awsExports },
+    mutations,
+    queries,
+  ] = await Promise.all([
+    import('uuid/v4'),
+    import('luxon'),
+    import('graphql-tag'),
+    import('aws-appsync'),
+    import('./aws-exports'),
+    import('./graphql/mutations'),
+    import('./graphql/queries'),
+  ]);
+
+  const apiKey = 'da2-fxyg3cebzbdlrjhqgtd5n67nsu';
+  const client = new AWSAppSyncClient({
+    url: awsExports.aws_appsync_graphqlEndpoint,
+    region: awsExports.aws_appsync_region,
+    auth: {
+      type: awsExports.aws_appsync_authenticationType,
+      apiKey,
+    },
+  });
 
   /**
    * @param text
@@ -84,11 +109,43 @@ import { DateTime } from 'luxon';
       this.table = [];
     }
 
+    hydrateLocalState() {
+      client
+        .query({
+          query: gql`${queries.listQuestCompletions}`,
+          variables: {
+            filter: {
+              quest_id: { eq: this.id },
+            },
+          },
+        })
+        .then(response => response.data && response.data.listQuestCompletions)
+        .then((data) => {
+          this.table = data.items || [];
+        })
+        .catch(console.error);
+    }
+
     /**
-     * @param elapsedTime
+     * @param {Number} completionTime
      */
-    addCompletedEntry(elapsedTime) {
-      this.table.push(elapsedTime.milliseconds);
+    addCompletedEntry(completionTime) {
+      const input = {
+        quest_id: this.id,
+        completion_time: completionTime,
+      };
+      this.table.push(input);
+
+      return client
+        .mutate({
+          mutation: gql`${mutations.createQuestCompletion}`,
+          variables: {
+            input,
+          },
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     }
 
     /**
@@ -100,7 +157,7 @@ import { DateTime } from 'luxon';
         return 0;
       }
 
-      return table.reduce((acc, val) => (acc + val), 0) / table.length;
+      return table.reduce((acc, val) => (acc + val.completion_time), 0) / table.length;
     }
 
     /**
@@ -112,20 +169,29 @@ import { DateTime } from 'luxon';
       await logIt(`%cAverage completion time for this quest is ${averageTime} milliseconds.`, normalText);
 
       if (elapsedTime.milliseconds < averageTime) {
-        await logIt('%cYou are faster than the others! 🏎💨', normalText, 1000);
+        await logIt('%cYou are faster than the average! 🏎💨', normalText, 1000);
       } else if (elapsedTime.milliseconds > averageTime) {
-        await logIt('%cYou are slower than the others! 🐌', normalText, 1000);
+        await logIt('%cYou are slower than the average! 🐌', normalText, 1000);
       } else {
         await logIt('%cYou are exactly "average"! 🙀', normalText, 1000);
       }
     }
 
-    start() {}
+    start() {
+    }
 
-    terminate() {}
+    terminate() {
+    }
   }
 
   class TheHiddenButtonQuest extends Quest {
+    constructor() {
+      super();
+      this.id = 'the-hidden-button-quest';
+
+      this.hydrateLocalState();
+    }
+
     getDefaultButtonCss() {
       return [
         ['position', 'absolute'],
@@ -160,7 +226,7 @@ import { DateTime } from 'luxon';
       this.button.textContent = '🔘';
 
       const questPromise = new Promise((resolve) => {
-        this.onButtonClicked = () => {
+        this.onButtonClicked = async () => {
           this.end = DateTime.local();
           this.button.style = makeCssString([
             ...this.getDefaultButtonCss(),
@@ -172,8 +238,8 @@ import { DateTime } from 'luxon';
           ]);
 
           this.elapsedTime = this.end.diff(this.start);
-          this.addCompletedEntry(this.elapsedTime);
 
+          await this.addCompletedEntry(this.elapsedTime.milliseconds);
           resolve();
         };
 
@@ -191,22 +257,23 @@ import { DateTime } from 'luxon';
     }
   }
 
-  window.addEventListener('devtoolschange', async (e) => {
-    if (e.detail.open) {
-      await logIt('%cWelcome, stranger!', titleCss, 200);
-      await logIt('%cYou want to play a game?', normalText, 1000);
-      await logIt("%cI'll take that as a yes... Remember, don't close the console!\n\n", normalText, 2000);
+  await logIt('%cWelcome, stranger!', titleCss, 200);
+  await logIt('%cYou want to play a game? 🧩', normalText, 1000);
+  await logIt("%cI'll take that as a yes... Remember, don't close the console!\n\n", normalText, 2000);
 
-      await logIt('%cQuest #1: The hidden 🔘', subTitleCss, 2000);
-      await logIt('%cFind the hidden button on the page and click it.', normalText, 1000);
+  await logIt('%cQuest #1: The hidden 🔘', subTitleCss, 2000);
+  await logIt('%cFind the hidden button on the page and click it.', normalText, 1000);
 
-      const theHiddenButtonQuest = new TheHiddenButtonQuest();
-      await theHiddenButtonQuest.start();
-      await logIt('%cWow, good job finding the button!', congratsCss, 400); // 400 is the animation time
-      await logIt('%c🎉', makeCssString([['font-size', '5em']]));
-      await theHiddenButtonQuest.printSummary();
-      theHiddenButtonQuest.terminate();
-    }
-  });
-// eslint-disable-next-line
-}(window, document));
+  const theHiddenButtonQuest = new TheHiddenButtonQuest();
+  await theHiddenButtonQuest.start();
+  await logIt('%cWow, good job finding the button!', congratsCss, 400); // 400 is the animation time
+  await logIt('%c🎉', makeCssString([['font-size', '5em']]));
+  await theHiddenButtonQuest.printSummary();
+  theHiddenButtonQuest.terminate();
+}
+
+window.addEventListener('devtoolschange', async (e) => {
+  if (e.detail.open) {
+    startTheGame();
+  }
+});

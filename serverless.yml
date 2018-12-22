@@ -2,6 +2,7 @@ service: miha-website
 
 plugins:
 - serverless-s3-sync
+- serverless-cloudfront-invalidate
 
 custom:
   configuration:
@@ -14,6 +15,10 @@ custom:
   s3Sync:
   - bucketName: ${self:custom.configuration.${self:provider.stage}.bucket}
     localDir: dist/
+  cloudfrontInvalidate:
+    distributionId: 'E1M5QMQP2L35B'
+    items:
+      - '/index.html'
 
 provider:
   stage: ${opt:stage, 'production'}

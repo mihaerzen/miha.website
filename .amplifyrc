@@ -1,0 +1,14 @@
+{
+    "providers": {
+        "awscloudformation": {
+            "AuthRoleName": "mihawebsite-20181222134837-authRole",
+            "UnauthRoleArn": "arn:aws:iam::431335522756:role/mihawebsite-20181222134837-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::431335522756:role/mihawebsite-20181222134837-authRole",
+            "Region": "eu-central-1",
+            "DeploymentBucketName": "mihawebsite-20181222134837-deployment",
+            "UnauthRoleName": "mihawebsite-20181222134837-unauthRole",
+            "StackName": "mihawebsite-20181222134837",
+            "StackId": "arn:aws:cloudformation:eu-central-1:431335522756:stack/mihawebsite-20181222134837/e66f0310-05e7-11e9-898f-0a62f85f92f4"
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "projectName": "mihawebsite",
+    "projectPath": "/Users/miha/Developer/github.com/mihaerzen/miha.website",
+    "defaultEditor": "sublime",
+    "frontendHandler": {
+        "javascript": "/Users/miha/.nvm/versions/node/v10.13.0/lib/node_modules/@aws-amplify/cli/node_modules/amplify-frontend-javascript"
+    },
+    "javascript": {
+        "framework": "none",
+        "config": {
+            "SourceDir": "src",
+            "DistributionDir": "dist",
+            "BuildCommand": "npm run-script build",
+            "StartCommand": "npm run-script start"
+        }
+    },
+    "providers": {
+        "awscloudformation": "/Users/miha/.nvm/versions/node/v10.13.0/lib/node_modules/@aws-amplify/cli/node_modules/amplify-provider-awscloudformation"
+    }
+}
