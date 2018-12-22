@@ -1,9 +1,9 @@
 {
   "name": "miha.website",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "webpack-dev-server --https --disableHostCheck",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +15,22 @@
   "bugs": {
     "url": "https://github.com/mihaerzen/miha.website/issues"
   },
-  "homepage": "https://github.com/mihaerzen/miha.website#readme"
+  "homepage": "https://github.com/mihaerzen/miha.website#readme",
+  "description": "",
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "html-webpack-plugin": "^4.0.0-alpha",
+    "robotstxt-webpack-plugin": "^4.0.1",
+    "serverless": "^1.30.3",
+    "serverless-s3-sync": "^1.7.0",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  },
+  "dependencies": {
+    "devtools-detect": "^2.2.0",
+    "luxon": "^1.3.3"
+  }
 }

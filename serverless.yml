@@ -1,0 +1,114 @@
+service: miha-website
+
+plugins:
+- serverless-s3-sync
+
+custom:
+  configuration:
+    production:
+      bucket: website-miha-production
+      domain: miha.website
+      minTTL: 0
+      defaultTTL: 86400 # one day
+      maxTTL: 31536000  # one year
+  s3Sync:
+  - bucketName: ${self:custom.configuration.${self:provider.stage}.bucket}
+    localDir: dist/
+
+provider:
+  stage: ${opt:stage, 'production'}
+  name: aws
+  runtime: nodejs8.10
+  region: eu-central-1
+
+resources:
+  Resources:
+    WebAppS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.configuration.${self:provider.stage}.bucket}
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: index.html
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - 'Authorization'
+                - 'Content-Length'
+              AllowedMethods:
+                - GET
+              MaxAge: 3000
+
+    WebAppS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: WebAppS3Bucket
+        PolicyDocument:
+          Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"
+            Action:
+            - s3:GetObject
+            Resource: arn:aws:s3:::${self:custom.configuration.${self:provider.stage}.bucket}/*
+
+    WebAppCloudFrontDistribution:
+      DependsOn:
+      - WebAppS3Bucket
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Origins:
+          - DomainName: { "Fn::GetAtt": [WebAppS3Bucket, DomainName ] }
+            Id: WebApp
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+          Enabled: 'true'
+          Aliases:
+          - ${self:custom.configuration.${self:provider.stage}.domain}
+          - www.${self:custom.configuration.${self:provider.stage}.domain}
+          DefaultRootObject: index.html
+          CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          CacheBehaviors:
+          - PathPattern: '/'
+            AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            TargetOriginId: WebApp
+            ForwardedValues:
+              QueryString: 'true'
+              Cookies:
+                Forward: none
+            ViewerProtocolPolicy: allow-all
+            MaxTTL: ${self:custom.configuration.${self:provider.stage}.maxTTL}
+            MinTTL: ${self:custom.configuration.${self:provider.stage}.minTTL}
+            DefaultTTL: ${self:custom.configuration.${self:provider.stage}.defaultTTL}
+            Compress: True
+          DefaultCacheBehavior:
+            AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            TargetOriginId: WebApp
+            ForwardedValues:
+              QueryString: 'true'
+              Cookies:
+                Forward: none
+            ViewerProtocolPolicy: allow-all
+            Compress: True
+
+  Outputs:
+    WebAppCloudFrontDistributionOutput:
+      Value:
+        'Fn::GetAtt': [ WebAppCloudFrontDistribution, DomainName ]
