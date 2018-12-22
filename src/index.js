@@ -245,7 +245,7 @@ async function startTheGame() {
 
           this.elapsedTime = this.end.diff(this.start);
 
-          await this.addCompletedEntry(this.elapsedTime.milliseconds);
+          this.addCompletedEntry(this.elapsedTime.milliseconds);
           resolve();
         };
 
