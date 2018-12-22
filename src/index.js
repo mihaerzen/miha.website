@@ -1,6 +1,12 @@
 /* eslint-disable class-methods-use-this */
 import 'devtools-detect';
 
+const userAgent = ((navigator && navigator.userAgent) || '').toLowerCase();
+function isFirefox() {
+  const match = userAgent.match(/(?:firefox|fxios)\/(\d+)/);
+  return match !== null && match[1];
+}
+
 async function startTheGame() {
   const [
     { default: uuid },
@@ -82,24 +88,24 @@ async function startTheGame() {
   }
 
   const titleCss = makeCssString([
-    ['color', 'red'],
+    ['color', '#ff9191'],
     ['font-size', '3em'],
     ['font-weight', '700'],
     ['text-shadow', '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'],
   ]);
   const congratsCss = makeCssString([
-    ['color', 'yellow'],
+    ['color', '#fffa70'],
     ['font-size', '2em'],
     ['font-weight', '700'],
     ['text-shadow', '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'],
   ]);
   const subTitleCss = makeCssString([
-    ['color', 'blue'],
+    ['color', '#f091ff'],
     ['font-size', '2em'],
     ['font-weight', '500'],
   ]);
   const normalText = makeCssString([
-    ['color', 'black'],
+    ['color', isFirefox() ? 'white' : 'black'],
     ['font-size', '1.6em'],
     ['font-weight', '300'],
   ]);
