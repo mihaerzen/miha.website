@@ -1,22 +1,23 @@
 service: miha-website
 
 plugins:
-- serverless-s3-sync
-- serverless-cloudfront-invalidate
+  - serverless-s3-sync
+  - serverless-cloudfront-invalidate
 
 custom:
   configuration:
     production:
-      bucket: website-miha-production
-      domain: miha.website
-      minTTL: 0
-      defaultTTL: 86400 # one day
-      maxTTL: 31536000  # one year
+      bucket: ${self:service}-${self:provider.stage}
+      secondLevelDomain: miha.website
+      domain: ${self:custom.configuration.${self:provider.stage}.secondLevelDomain}
+      # Certificates for Cloudfront must be in us-east-1 region
+      # https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-ssl-certificate-errors/
+      certificateArn: arn:aws:acm:us-east-1:431335522756:certificate/86af28d2-80fe-4334-9900-a6c0dcb36d66
   s3Sync:
-  - bucketName: ${self:custom.configuration.${self:provider.stage}.bucket}
-    localDir: dist/
+    - bucketName: ${self:custom.configuration.${self:provider.stage}.bucket}
+      localDir: dist/
   cloudfrontInvalidate:
-    distributionId: 'E1M5QMQP2L35B'
+    distributionIdKey: CDNDistributionId
     items:
       - '/index.html'
 
@@ -69,51 +70,52 @@ resources:
       Properties:
         DistributionConfig:
           Origins:
-          - DomainName: { "Fn::GetAtt": [WebAppS3Bucket, DomainName ] }
-            Id: WebApp
-            CustomOriginConfig:
-              HTTPPort: 80
-              HTTPSPort: 443
-              OriginProtocolPolicy: http-only
+            - DomainName: { "Fn::GetAtt": [WebAppS3Bucket, DomainName ] }
+              Id: WebApp${self:provider.stage}
+              CustomOriginConfig:
+                HTTPPort: 80
+                HTTPSPort: 443
+                OriginProtocolPolicy: https-only
           Enabled: 'true'
           Aliases:
-          - ${self:custom.configuration.${self:provider.stage}.domain}
-          - www.${self:custom.configuration.${self:provider.stage}.domain}
+            - ${self:custom.configuration.${self:provider.stage}.domain}
           DefaultRootObject: index.html
           CustomErrorResponses:
-          - ErrorCode: 404
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-          CacheBehaviors:
-          - PathPattern: '/'
-            AllowedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
-            TargetOriginId: WebApp
-            ForwardedValues:
-              QueryString: 'true'
-              Cookies:
-                Forward: none
-            ViewerProtocolPolicy: allow-all
-            MaxTTL: ${self:custom.configuration.${self:provider.stage}.maxTTL}
-            MinTTL: ${self:custom.configuration.${self:provider.stage}.minTTL}
-            DefaultTTL: ${self:custom.configuration.${self:provider.stage}.defaultTTL}
-            Compress: True
+            - ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: /index.html
           DefaultCacheBehavior:
             AllowedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
-            TargetOriginId: WebApp
+              - GET
+              - HEAD
+              - OPTIONS
+            TargetOriginId: WebApp${self:provider.stage}
             ForwardedValues:
               QueryString: 'true'
               Cookies:
                 Forward: none
-            ViewerProtocolPolicy: allow-all
+            ViewerProtocolPolicy: redirect-to-https
             Compress: True
+          ViewerCertificate:
+            AcmCertificateArn: ${self:custom.configuration.${self:provider.stage}.certificateArn}
+            SslSupportMethod: sni-only
 
+    DnsRecord:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        AliasTarget:
+          DNSName:
+            Fn::GetAtt:
+              - WebAppCloudFrontDistribution
+              - DomainName
+          # Looks like it is always the same for CloudFront distribs.
+          # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html
+          HostedZoneId: Z2FDTNDATAQYW2
+        HostedZoneName: ${self:custom.configuration.${self:provider.stage}.secondLevelDomain}.
+        Name: ${self:custom.configuration.${self:provider.stage}.domain}.
+        Type: 'A'
   Outputs:
-    WebAppCloudFrontDistributionOutput:
+    CDNDistributionId:
+      Description: CDN distribution id.
       Value:
-        'Fn::GetAtt': [ WebAppCloudFrontDistribution, DomainName ]
+        Ref: WebAppCloudFrontDistribution
