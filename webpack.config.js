@@ -1,5 +1,6 @@
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const { default: RobotstxtPlugin } = require('robotstxt-webpack-plugin');
 
 module.exports = env => ({
@@ -22,5 +23,9 @@ module.exports = env => ({
         },
       ],
     }),
+
+    new CopyPlugin([
+      { from: 'src/cv_2021-05-29.pdf', to: 'cv_2021-05-29.pdf' },
+    ]),
   ],
 });

@@ -23,6 +23,7 @@
   "description": "",
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "copy-webpack-plugin": "^5.0.4",
     "eslint": "^5.12.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
